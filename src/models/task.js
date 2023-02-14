@@ -1,17 +1,20 @@
-import { Schema, model } from 'mongoose';
+import mongoose from 'mongoose';
 
-const TaskSchema = new Schema({
+const TaskSchema = new mongoose.Schema({
   title: {
     type: String,
-    required: true,
+    required: [true, 'Please add a title'],
+    trim: true,
+    maxlength: [50, 'Title cannot be more than 20 characters']
   },
   description: {
     type: String,
     required: true,
+    trim: true,
+    maxlength: [200, 'Title cannot be more than 20 characters']
   },
   completed: {
     type: Boolean,
-    required: true,
     default: false,
   },
   createdAt: {
@@ -21,4 +24,4 @@ const TaskSchema = new Schema({
   },
 });
 
-export default model('Task', TaskSchema);
+export default mongoose.model('Task', TaskSchema);
