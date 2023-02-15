@@ -5,13 +5,13 @@ const TaskSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please add a title'],
     trim: true,
-    maxlength: [50, 'Title cannot be more than 20 characters']
+    maxlength: [50, 'Title cannot be more than 20 characters'],
   },
   description: {
     type: String,
     required: true,
     trim: true,
-    maxlength: [200, 'Title cannot be more than 20 characters']
+    maxlength: [200, 'Title cannot be more than 20 characters'],
   },
   completed: {
     type: Boolean,
