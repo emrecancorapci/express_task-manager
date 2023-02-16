@@ -51,7 +51,9 @@ export const getTask = async (req, res) => {
 };
 
 export const createTask = async (req, res) => {
-  await Task.create(new Task({ ...req.body, createdAt: Date.now() }, { runValidators: true }))
+  await Task.create(
+    new Task({ ...req.body, createdAt: Date.now() }, { runValidators: true })
+  )
     .then((task) => {
       if (!task) {
         return res.status(400).json({
@@ -76,7 +78,10 @@ export const createTask = async (req, res) => {
 };
 
 export const updateTask = async (req, res) => {
-  await Task.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true, runValidators: true })
+  await Task.findOneAndUpdate({ _id: req.params.id }, req.body, {
+    new: true,
+    runValidators: true,
+  })
     .then((task) => {
       if (!task) {
         return res.status(404).json({

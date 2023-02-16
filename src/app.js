@@ -1,31 +1,28 @@
 import Express from 'express';
+import dotenv from 'dotenv';
+
 import taskRouter from './routes/tasks.js';
 import connectDb from './db/connection.js';
-import dotenv from 'dotenv';
+import notFound from './middleware/not-found.js';
 
 dotenv.config();
 
 const app = Express();
 const port = 3000;
 
-const startServer = async () => {
-  try {
-    await connectDb(process.env.MONGO_URI);
+app.use(Express.json());
+app.use(Express.static('public'));
 
+
+app.use('/api/v1/tasks', taskRouter);
+app.use(notFound);
+
+await connectDb(process.env.MONGO_URI)
+  .then(() => {
     app.listen(port, () => {
       console.log(`Server is running on http://localhost:${port}`);
     });
-  } catch (error) {
+  })
+  .catch((error) => {
     console.log(error);
-  }
-};
-
-app.use(Express.json());
-
-app.get('/hello', (req, res) => {
-  res.send('Hello World!');
-});
-
-app.use('/api/v1/tasks', taskRouter);
-
-await startServer();
+  });
