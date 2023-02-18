@@ -1,131 +1,111 @@
 import Task from '../models/Task.js';
+import until from '../middleware/async-wrapper.js';
 
 export const getAllTasks = async (req, res) => {
-  await Task.find({})
-    .then((tasks) => {
-      if (tasks) {
-        return res.status(200).json({
-          success: true,
-          data: tasks,
-        });
-      }
+  const [error, tasks] = await until(Task.find({}));
+  if (error) {
+    console.log(error);
 
-      return res.status(404).json({
-        success: false,
-        error: 'No tasks found',
-      });
-    })
-    .catch((error) => {
-      console.log(error);
-
-      return res.status(500).json({
-        success: false,
-        error: 'Server error',
-      });
+    return res.status(500).json({
+      error: 'Server error',
     });
+  }
+
+  return res.status(200).json({
+    data: tasks,
+  });
 };
 
 export const getTask = async (req, res) => {
-  await Task.findById(req.params.id)
-    .then((task) => {
-      if (task) {
-        return res.status(200).json({
-          success: true,
-          data: task,
-        });
-      }
+  const [error, task] = await until(Task.findById(req.params.id));
+  if (error) {
+    console.log(error);
 
-      return res.status(404).json({
-        success: false,
-        error: 'No task found',
-      });
-    })
-    .catch((err) => {
-      console.log(err);
-
-      return res.status(500).json({
-        success: false,
-        error: 'Server error',
-      });
+    return res.status(500).json({
+      error: 'Server error',
     });
+  }
+
+  if (!task) {
+    return res.status(404).json({
+      error: 'No task found',
+    });
+  }
+
+  return res.status(200).json({
+    data: task,
+  });
 };
 
 export const createTask = async (req, res) => {
-  await Task.create(
-    new Task({ ...req.body, createdAt: Date.now() }, { runValidators: true })
-  )
-    .then((task) => {
-      if (!task) {
-        return res.status(400).json({
-          success: false,
-          error: 'Task not created',
-        });
-      }
+  const [error, task] = await until(
+    Task.create(new Task({ ...req.body, createdAt: Date.now() }))
+  );
 
-      return res.status(201).json({
-        success: true,
-        data: task,
-      });
-    })
-    .catch((err) => {
-      console.log(err);
+  if (error) {
+    console.log(err);
 
-      return res.status(500).json({
-        success: false,
-        error: 'Server error',
-      });
+    return res.status(500).json({
+      error: 'Server error',
     });
+  }
+
+  if (!task) {
+    return res.status(400).json({
+      error: 'Task not created',
+    });
+  }
+
+  return res.status(201).json({
+    data: task,
+  });
 };
 
 export const updateTask = async (req, res) => {
-  await Task.findOneAndUpdate({ _id: req.params.id }, req.body, {
-    new: true,
-    runValidators: true,
-  })
-    .then((task) => {
-      if (!task) {
-        return res.status(404).json({
-          success: false,
-          error: 'No task found',
-        });
-      }
-
-      return res.status(200).json({
-        success: true,
-        data: task,
-      });
+  const [error, task] = await until(
+    Task.findOneAndUpdate({ _id: req.params.id }, req.body, {
+      new: true,
+      runValidators: true,
     })
-    .catch((err) => {
-      console.log(err);
+  );
 
-      return res.status(500).json({
-        success: false,
-        error: 'Server error',
-      });
+  if (error) {
+    console.log(error);
+
+    return res.status(500).json({
+      error: 'Server error',
     });
+  }
+
+  if (!task) {
+    return res.status(404).json({
+      error: 'No task found',
+    });
+  }
+
+  return res.status(200).json({
+    data: task,
+  });
 };
 
 export const deleteTask = async (req, res) => {
-  await Task.deleteOne({ _id: req.params.id })
-    .then((task) => {
-      if (!task) {
-        return res.status(404).json({
-          success: false,
-          error: 'No task found',
-        });
-      }
+  const [error, data] = await until(Task.deleteOne({ _id: req.params.id }));
 
-      return res.status(200).json({
-        success: true,
-        data: task,
-      });
-    })
-    .catch((err) => {
-      console.log(err);
+  if (error) {
+    console.log(error);
 
-      return res.status(500).json({
-        success: false,
-        error: 'Server error',
-      });
+    return res.status(500).json({
+      error: 'Server error',
     });
+  }
+
+  if (!data) {
+    return res.status(404).json({
+      error: 'No task found',
+    });
+  }
+
+  return res.status(200).json({
+    data: data,
+  });
 };
