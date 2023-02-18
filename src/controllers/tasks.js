@@ -1,12 +1,10 @@
-import Task from '../models/Task.js';
+import Task from '../models/task.js';
 import until from '../middleware/async-wrapper.js';
 import { createApiError } from '../errors/api-error.js';
 
 export const getAllTasks = async (req, res) => {
   const [error, tasks] = await until(Task.find({}));
   if (error) {
-    console.log(error);
-
     return res.status(500).json({
       error: 'Server error',
     });
@@ -20,8 +18,6 @@ export const getTask = async (req, res, next) => {
   const [error, task] = await until(Task.findById(id));
 
   if (error) {
-    console.log(error);
-
     return res.status(500).json({
       error: 'Server error',
       msg: error.message,
@@ -43,8 +39,6 @@ export const createTask = async (req, res) => {
   );
 
   if (error) {
-    console.log(err);
-
     return res.status(500).json({
       error: 'Server error',
     });
@@ -69,8 +63,6 @@ export const updateTask = async (req, res, next) => {
   );
 
   if (error) {
-    console.log(error);
-
     return res.status(500).json({
       error: 'Server error',
     });
@@ -80,28 +72,22 @@ export const updateTask = async (req, res, next) => {
     return next(createApiError(`No task found with id: ${id}`, 404));
   }
 
-  return res.status(200).json({
-    data: task,
-  });
+  return res.status(200).json(task);
 };
 
 export const deleteTask = async (req, res, next) => {
   const { id } = req.params;
-  const [error, data] = await until(Task.deleteOne({ _id: id }));
+  const [error, task] = await until(Task.deleteOne({ _id: id }));
 
   if (error) {
-    console.log(error);
-
     return res.status(500).json({
       error: 'Server error',
     });
   }
 
-  if (!data) {
+  if (!task) {
     return next(createApiError(`No task found with id: ${id}`, 404));
   }
 
-  return res.status(200).json({
-    data: data,
-  });
+  return res.status(200).json(task);
 };
