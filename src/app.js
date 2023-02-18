@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import taskRouter from './routes/tasks.js';
 import connectDb from './db/connection.js';
 import notFound from './middleware/not-found.js';
+import errorHandler from './middleware/error-handler.js';
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ app.use(Express.static('public'));
 
 app.use('/api/v1/tasks', taskRouter);
 app.use(notFound);
+app.use(errorHandler);
 
 await connectDb(process.env.MONGO_URI)
   .then(() => {

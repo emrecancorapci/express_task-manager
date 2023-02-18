@@ -1,5 +1,6 @@
 import Task from '../models/Task.js';
 import until from '../middleware/async-wrapper.js';
+import { createApiError } from '../errors/api-error.js';
 
 export const getAllTasks = async (req, res) => {
   const [error, tasks] = await until(Task.find({}));
@@ -11,35 +12,34 @@ export const getAllTasks = async (req, res) => {
     });
   }
 
-  return res.status(200).json({
-    data: tasks,
-  });
+  return res.status(200).json(tasks);
 };
 
-export const getTask = async (req, res) => {
-  const [error, task] = await until(Task.findById(req.params.id));
+export const getTask = async (req, res, next) => {
+  const { id } = req.params;
+  const [error, task] = await until(Task.findById(id));
+
   if (error) {
     console.log(error);
 
     return res.status(500).json({
       error: 'Server error',
+      msg: error.message,
     });
   }
 
   if (!task) {
-    return res.status(404).json({
-      error: 'No task found',
-    });
+    return next(createApiError(`No task found with id: ${id}`, 404));
   }
 
-  return res.status(200).json({
-    data: task,
-  });
+  return res.status(200).json(task);
 };
 
 export const createTask = async (req, res) => {
   const [error, task] = await until(
-    Task.create(new Task({ ...req.body, createdAt: Date.now() }))
+    Task.create(
+      new Task({ ...req.body, createdAt: Date.now() }, { runValidators: true })
+    )
   );
 
   if (error) {
@@ -52,18 +52,17 @@ export const createTask = async (req, res) => {
 
   if (!task) {
     return res.status(400).json({
-      error: 'Task not created',
+      error: 'Task is not created',
     });
   }
 
-  return res.status(201).json({
-    data: task,
-  });
+  return res.status(201).json(task);
 };
 
-export const updateTask = async (req, res) => {
+export const updateTask = async (req, res, next) => {
+  const { id } = req.params;
   const [error, task] = await until(
-    Task.findOneAndUpdate({ _id: req.params.id }, req.body, {
+    Task.findOneAndUpdate({ _id: id }, req.body, {
       new: true,
       runValidators: true,
     })
@@ -78,9 +77,7 @@ export const updateTask = async (req, res) => {
   }
 
   if (!task) {
-    return res.status(404).json({
-      error: 'No task found',
-    });
+    return next(createApiError(`No task found with id: ${id}`, 404));
   }
 
   return res.status(200).json({
@@ -88,8 +85,9 @@ export const updateTask = async (req, res) => {
   });
 };
 
-export const deleteTask = async (req, res) => {
-  const [error, data] = await until(Task.deleteOne({ _id: req.params.id }));
+export const deleteTask = async (req, res, next) => {
+  const { id } = req.params;
+  const [error, data] = await until(Task.deleteOne({ _id: id }));
 
   if (error) {
     console.log(error);
@@ -100,9 +98,7 @@ export const deleteTask = async (req, res) => {
   }
 
   if (!data) {
-    return res.status(404).json({
-      error: 'No task found',
-    });
+    return next(createApiError(`No task found with id: ${id}`, 404));
   }
 
   return res.status(200).json({
